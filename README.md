@@ -5,7 +5,7 @@ Before cloning, run this as root, be aware of set-up arguments
 GAME_DIRECTORY="<GAME_DIRECTORY>"
 SERVER_USR="<SERVER_USER>"
 
-apt-get update -y && apt-get upgrade -y
+apt-get update -y
 apt-get install software-properties-common -y
 
 add-apt-repository multiverse -y
@@ -30,7 +30,7 @@ GAME_DIR="$1"
 #Here is because I want to autoscale the ram usage to 3/4 (and 1/4 for OS) if it's lower 12GB
 #if it's grater il cut-off 4GB for OS and leave the rest for Zomboid
 RAM_MB=$(free -m | awk '/^Mem:/ {print $2}')
-RAM_GB=$(echo "scale=0; ($RAM_MB + 768) / 1024" | bc)
+RAM_GB=$(echo "scale=0; ($RAM_MB + 1024) / 1024" | bc)
 if [ "$RAM_GB" -lt "12" ]; then
 	Z_RAM=$(echo "($RAM_MB * 3 / 4) / 1024" | bc)
 else
@@ -43,7 +43,7 @@ sleep 2
 done
 echo "Zomboid successfully installed"
 echo "Autoscaling RAM..."
-jq -i --arg ram "-Xmx${Z_RAM}g" '.vmArgs |= map(if startswith("-Xmx") then $ram else . end)' "$GAME_DIR/ProjectZomboid64.json"
+jq --arg ram "-Xmx${Z_RAM}g" '.vmArgs |= map(if startswith("-Xmx") then $ram else . end)' "$GAME_DIR/ProjectZomboid64.json" > "$GAME_DIR/tmp.json" && mv "$GAME_DIR/tmp.json" "$GAME_DIR/ProjectZomboid64.json"
 echo "RAM is $Z_RAM"
 EOF
 
